@@ -1,4 +1,4 @@
-# 1.NamingConventions
+# NamingConventions
 
 ### ResourceGroup:
 RG-{AppName}-{Env}-{###}

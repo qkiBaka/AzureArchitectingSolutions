@@ -1,0 +1,44 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnetName": {
+      "value": "VNET-KKULearn"
+    },
+    "vnetAddressPrefix": {
+      "value": "10.0.0.0/16"
+    },
+    "subnet1Prefix": {
+      "value": "10.0.0.0/24"
+    },
+    "subnet1Name": {
+      "value": "Subnet1"
+    },
+    "subnet2Prefix": {
+      "value": "10.0.1.0/24"
+    },
+    "subnet2Name": {
+      "value": "Subnet2"
+    },
+    "vmName1": {
+      "value": "vmtestapp1"
+    },
+    "vmName2": {
+      "value": "vmtestapp2"
+    },
+    "adminUsername": {
+      "value": "admin"
+    },
+    "adminPasswordOrKey": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/28d1038a-f530-41d1-9c6e-4c37c89d36ab/resourceGroups/KKU-Learn/providers/Microsoft.KeyVault/vaults/KKU-KeyVault"
+        },
+        "secretName": "VmPass"
+      }
+    },
+    "VmSize": {
+      "value": "Standard_B2s"
+    }
+  }
+}

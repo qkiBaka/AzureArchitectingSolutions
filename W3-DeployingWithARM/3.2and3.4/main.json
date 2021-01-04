@@ -1,0 +1,227 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "apiProfile": "2019-03-01-hybrid",
+  "parameters": {
+    "vnetName": {
+      "type": "string",
+      "defaultValue": "[toLower( concat( 'VNET-', uniqueString(resourceGroup().id) ) )]",
+      "metadata": {
+        "description": "VNet name"
+      }
+    },
+    "vnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "VNet address prefix"
+      }
+    },
+    "subnet1Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/24",
+      "metadata": {
+        "description": "Subnet 1 Prefix"
+      }
+    },
+    "subnet1Name": {
+      "type": "string",
+      "defaultValue": "Subnet1",
+      "metadata": {
+        "description": "Subnet 1 Name"
+      }
+    },
+    "subnet2Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.1.0/24",
+      "metadata": {
+        "description": "Subnet 2 Prefix"
+      }
+    },
+    "subnet2Name": {
+      "type": "string",
+      "defaultValue": "Subnet2",
+      "metadata": {
+        "description": "Subnet 2 Name"
+      }
+    },
+    "nsgName": {
+      "type": "string",
+      "defaultValue": "nsg-AllowSSH",
+      "metadata": {
+        "description": "NSG name"
+      }
+    },
+    "vmName1": {
+      "type": "string",
+      "defaultValue": "vmtestlinux1",
+      "metadata": {
+        "description": "The name of you Virtual Machine."
+      }
+    },
+    "vmName2": {
+      "type": "string",
+      "defaultValue": "vmtestlinux2",
+      "metadata": {
+        "description": "The name of you Virtual Machine."
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Username for the Virtual Machine."
+      }
+    },
+    "adminPasswordOrKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+      }
+    },
+    "VmSize": {
+      "type": "string",
+      "defaultValue": "Standard_B2s",
+      "metadata": {
+        "description": "The size of the VM"
+      }
+    }
+  },
+  "variables": {},
+  "functions": [],
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "VnetWith2Subnets",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-vnet-two-subnets/azuredeploy.json",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "vnetAddressPrefix": {
+            "value": "[parameters('vnetAddressPrefix')]"
+          },
+          "subnet1Name": {
+            "value": "[parameters('subnet1Name')]"
+          },
+          "subnet1Prefix": {
+            "value": "[parameters('subnet1Prefix')]"
+          },
+          "subnet2Name": {
+            "value": "[parameters('subnet2Name')]"
+          },
+          "subnet2Prefix": {
+            "value": "[parameters('subnet2Prefix')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "NSG",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://raw.githubusercontent.com/qkiBaka/AzureArchitectingSolutions/master/W3-DeployingWithARM/3.2and3.4/nsg-allowSSH.json",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "nsgName": {
+            "value": "[parameters('nsgName')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "VM1",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments','VnetWith2Subnets')]",
+        "[resourceId('Microsoft.Resources/deployments', 'NSG')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-vm-simple-linux/azuredeploy.json",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('vmName1')]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "adminPasswordOrKey": {
+            "value": "[parameters('adminPasswordOrKey')]"
+          },
+          "dnsLabelPrefix": {
+            "value": "[toLower(concat(parameters('vmName1'), uniqueString(resourceGroup().id)))]"
+          },
+          "VmSize": {
+            "value": "[parameters('VmSize')]"
+          },
+          "virtualNetworkName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "subnetName": {
+            "value": "[parameters('subnet1Name')]"
+          },
+          "networkSecurityGroupName": {
+            "value": "[parameters('nsgName')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "VM2",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments','VnetWith2Subnets')]",
+        "[resourceId('Microsoft.Resources/deployments', 'NSG')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-vm-simple-linux/azuredeploy.json",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('vmName2')]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "adminPasswordOrKey": {
+            "value": "[parameters('adminPasswordOrKey')]"
+          },
+          "dnsLabelPrefix": {
+            "value": "[toLower(concat(parameters('vmName2'), uniqueString(resourceGroup().id)))]"
+          },
+          "VmSize": {
+            "value": "[parameters('VmSize')]"
+          },
+          "virtualNetworkName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "subnetName": {
+            "value": "[parameters('subnet2Name')]"
+          },
+          "networkSecurityGroupName": {
+            "value": "[parameters('nsgName')]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}
